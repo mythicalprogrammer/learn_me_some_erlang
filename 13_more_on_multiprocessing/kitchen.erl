@@ -43,3 +43,41 @@ fridge2(FoodList) ->
 		terminate ->
 			ok
 	end.
+
+% Abstracting the protocol
+% The problem with the previous functions is that the user
+% needs to understand the structure of the message that the kitchen2 process
+% will accept.
+%		{From, {store, Food}} ->
+%		{From, {take, Food}} ->
+%
+% we want to abstract that:
+
+store(Pid, Food) ->
+	Pid ! {self(), {store, Food}},
+	receive
+		{Pid, Msg} -> Msg
+	end.
+
+take(Pid, Food) ->
+	Pid ! {self(), {take, Food}},
+	receive
+		{Pid, Msg} -> Msg
+	end.
+
+% the above two functions take the Pid of the spawned kitchen PID and send
+% that process the shell pid and the take food command, 
+% basically abstracting away the protocol
+% sending to the pid itself (fridge2) will take the prepared msg
+
+
+% Spawning Process before we can send process msg is annoying
+% we want to hide the step where we need to spawn a process
+
+start(FoodList) ->
+	spawn(?MODULE, fridge2, [FoodList]).
+
+% so now instead of doing:
+%		Pid = spawn(kitchen, fridge2, [some_food_list]).
+% we can do this:
+%		Pid = kitchen:start([bacon,chicken,cheese]).
