@@ -81,3 +81,32 @@ start(FoodList) ->
 %		Pid = spawn(kitchen, fridge2, [some_food_list]).
 % we can do this:
 %		Pid = kitchen:start([bacon,chicken,cheese]).
+
+
+%%% 
+%% What if we gave a fake PID of a process that doesn't exist?
+% shell freezes
+%
+% shell, our process, send msg to some unkonwn process
+% shell switches to recieve mode and waits for a new msg
+% nonexisting procses send nothing cause it's fake
+% shell stuck in recieve mode forever
+
+% to fix this, the wait forever for a msg, erlang have a time out construct
+% which wait for specified amount of time before timing out
+
+store2(Pid, Food) ->
+	Pid ! {self(), {store, Food}},
+	receive
+		{Pid, Msg} -> Msg
+	after 3000 ->
+		timeout
+	end.
+
+take2(Pid, Food) ->
+	Pid ! {self(), {take, Food}},
+	receive
+		{Pid, Msg} -> Msg
+	after 3000 ->
+		timeout
+	end.
